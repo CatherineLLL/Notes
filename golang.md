@@ -275,10 +275,24 @@ type Person struct {
 	Name string
 	age  int
 }
+func SetName(this *Person) {
+	this.Name = "Lisa"
+}
 ```
 类名、属性名首字母大写，表示该属性对外可访问（其它包内也可访问）
 
 ###继承
 
+在子类中直接声明父类对象
+
+```
+type Student struct {
+	person Person
+	Score  int
+}
+```
+
+###多态
+使用interface来定义一个接口，本质是指针
 
 
