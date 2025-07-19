@@ -445,7 +445,67 @@ type Person struct {
 * 多进程壁垒：
 	* 进程内存占用高
 
-协程 （co-routine）
+###协程 （co-routine）
+* 将线程分为两部分：内核部分和用户态部分，用户态部分称为协程，对CPU不可见
+![](pictures/goroutine.jpg)
+
+* go中的协程命名为goroutine，使用协程调度器，将协程分配给线程执行；
+* 协程的好处：
+	* 内存占用少（几kb），因此可以大量分配协程；
+	* 灵活切换；
+
+###go协程调度机制（GMP）
+* GMP含义：
+	* G：Goroutine，协程；
+	* M：Machine，线程；
+	* P：Processor，协程调度器
+
+* GPM示意：
+![](pictures/GPM.jpg)
+
+####调度器的主要设计策略
+* 复用线程
+	* **work stealing** 机制：当P2的本地队列为空但P1的本地队列仍有待执行的goroutine时，直接从P1的本地队列中偷取协程在M2上执行；
+	* **hand off** 机制：如果G1在M1上执行被阻塞时，就会创建/唤醒一个新的thread（M3），再将P1及其本地队列绑定到M3执行，原有G1仍在M1上执行；
+	![](pictures/HandOff.jpg)
+	
+* 利用并行：使用GOMAXPROCS来限定P的个数，一般设定为CPU核数/2；
+* 抢占：如果该调度器中还有其它未执行完成的协程，每个goroutine按照时间片（10ms）来使用threaad，如果到了时间片结束时原goroutine未主动释放，则新的待执行协程会主动抢占处理器；
+* 全局G队列：GMP机制中还有一个带锁的全局协程队列，当所有本地队列为空时，P会主动从全局队列拿待执行协程；但该动作需要对全局队列加解锁，时间比较久
+
+####创建goroutine
+使用go 关键字创建goroutine并执行其后的func
+
+```
+go Test() //将Test函数放在一个新的gorutine中执行
+
+```
+退出当前goroutine的方法：调用 ``runtime.Goexit()``
+
+##Channel
+
+* channel是go的一种内置数据类型，两个goroutine之间可以通过channel来通信；
+```
+c := make(chan int)
+```
+
+###有缓冲和无缓冲channel区别
+
+####无缓冲channel
+* 第一步：两个goroutine都到达通道，但两个都没有开始执行发送和接收；
+* 第二步：发送方开始发送。此时，发送方协程在通道中阻塞，直到数据交换完毕；
+* 第三步：接收方协程开始接收，此时接收方协程也在通道中被阻塞，直到数据交换完毕；
+* 第四步：数据发送及接收过程；
+* 第五步：数据交换完毕，两个协程同时释放；
+
+####有缓冲channel
+
+
+
+
+	
+		 
+
 
 
 
