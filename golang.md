@@ -293,6 +293,161 @@ type Student struct {
 ```
 
 ###多态
-使用interface来定义一个接口，本质是指针
+使用interface来定义一个父类接口，本质是指针
+子类需要实现所有父类的接口方法
+
+声明一个接口：
+
+```
+type AnimalIF interface {
+	Sleep()
+	GetColor() string
+}
+```
+声明一个子类方法
+
+
+```
+type Dog struct {
+	color string
+}
+
+func (this *Dog) GetColor() string {
+	return this.color
+}
+
+func (this *Dog) Sleep() {
+	fmt.Println("Dog is sleeping")
+}
+```
+
+可以用父类的指针来调用子类的方法
+
+```
+var animal AnimalIF // animal是父类指针
+animal = &Dog{"yellow"}
+animal.Sleep()
+fmt.Println(animal.GetColor())
+
+```
+
+nterface{}还可以代表空接口，可以传入任意类型；通过类型断言来确定传入的具体是什么类型
+
+```
+func myFunc(arg interface{}) {
+	fmt.Println("myFunc is called")
+	fmt.Println(arg)
+
+	// 类型断言
+	value, ok := arg.(string)
+
+	if !ok {
+		fmt.Println("arg is not string")
+	} else {
+		fmt.Println("arg is string,value=", value)
+	}
+}
+```
+
+##反射（reflect）
+* go中的每个变量底层都会对应一个pair\<type,val\>；
+* 类型断言是判断type是不是对应数据类型
+*  ``reflect.TypeOf(i interface{})``:动态获取输入接口中的值的类型，如果接口为空则返回nil
+* ``reflect.ValueOf(i interface{})``:获取输入接口中数据的值，如果为空接口则返回0；
+* 使用reflect需要import reflect包
+
+```
+type Person struct {
+	Name string
+	Age  int
+}
+
+func reflectTest(arg interface{}) {
+	t := reflect.TypeOf(arg)
+	fmt.Println("type of arg is ", t)
+
+	v := reflect.ValueOf(arg)
+	fmt.Println("value of arg is ", v)
+
+	k := v.Kind()
+	fmt.Println("kind of arg is ", k)
+
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		value := v.Field(i).Interface()
+		fmt.Println(field.Name, value)
+	}
+}
+
+```
+执行以上代码，输出：
+
+```
+type of arg is  main.Person
+value of arg is  {Lisa 18}
+kind of arg is  struct
+Name Lisa
+Age 18
+```
+
+##结构体标签
+go中可以使用结构体标签进行json序列化/反序列化；
+
+进行json序列化/反序列化需要引入头文件：
+
+```
+"encoding/json"
+```
+
+结构体标签示例：
+
+```
+type Person struct {
+	Name string `json:"name"`
+	Age  int    `json:"age"`
+	Sex  int    `json:"sex"`
+}
+```
+
+```
+// 序列化 struct->json
+	person := Person{"Lisa", 18, 1}
+	jsonStr, err := json.Marshal(person)
+	if err != nil {
+		fmt.Println("json marshal failed,err:", err)
+		return
+	}
+	fmt.Println(string(jsonStr))
+
+	// 反序列化 json->struct
+	person2 := Person{}
+	err = json.Unmarshal(jsonStr, &person2)
+	if err != nil {
+		fmt.Println("json unmarshal failed,err:", err)
+		return
+	}
+	fmt.Println(person2)
+	
+```
+输出示例：
+
+```
+{"name":"Lisa","age":18,"sex":1}
+{Lisa 18 1}
+
+```
+
+##goroutine
+* 多线程引入的问题：
+	* CPU线程切换成本较高（系统调用、上下文切换），造成CPU时间浪费；线程数量越多，切换成本越大，浪费CPU时间越多；
+	* 多线程伴随同步竞争（锁、资源冲突等），使得开发设计变复杂；
+
+* 多进程壁垒：
+	* 进程内存占用高
+
+协程 （co-routine）
+
+
+
 
 
