@@ -499,6 +499,24 @@ c := make(chan int)
 * 第五步：数据交换完毕，两个协程同时释放；
 
 ####有缓冲channel
+* 数据发送与接收异步，互不阻塞；
+* 通道满时，发送方阻塞；
+* 通道空时，接收方阻塞；
+
+```
+c := make(chan int,3)//缓冲区大小为3的channel 
+```
+
+###关闭channel
+* 通过close()方法来关闭channel
+* 当没有数据可发送时，可以关闭channel
+* 关闭channel后，无法向channel中再发送数据（会引发panic错误：panic: send on closed channel）
+* 关闭channel后，可以继续从channel接收数据；
+* 对于nil channel(未通过make初始化的channel)，无论收发都会被阻塞；
+
+###channel与range
+
+
 
 
 
